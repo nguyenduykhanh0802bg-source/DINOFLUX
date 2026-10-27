@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b28af501cc4c85f4d86d7e278946d140, type: 3}
+  m_Name: Biome_Cave
+  m_EditorClassIdentifier: Assembly-CSharp::BiomeData
+  displayName: "Hang \u0111\u1ED9ng"
+  tagline: "C\u1EA9n th\u1EADn: d\u01A1i truy \u0111u\u1ED5i v\xE0 s\xF3ng xung k\xEDch!"
+  startDistance: 500
+  backgroundColor: {r: 0.05, g: 0.05, b: 0.11, a: 1}
+  particleColor: {r: 0.55, g: 0.65, b: 1, a: 1}
+  particleDrift: -0.5
+  catalog: {fileID: 11400000, guid: 768db191816fea74d92dec4cc3042865, type: 2}
+  speedMultiplier: 1.05
+  budgetMultiplier: 1.05

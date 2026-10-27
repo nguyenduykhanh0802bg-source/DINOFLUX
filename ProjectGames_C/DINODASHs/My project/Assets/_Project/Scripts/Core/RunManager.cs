@@ -37,6 +37,9 @@ public class RunManager : MonoBehaviour
     public int Score => Mathf.FloorToInt(Distance) + Gems * scorePerGem;
     public float ScrollSpeed { get; private set; }
 
+    /// <summary>BiomeManager đặt hệ số tốc độ của biome hiện tại (1 = không đổi).</summary>
+    public float BiomeSpeedMultiplier { get; set; } = 1f;
+
     public float BestDistance { get; private set; }
     public bool NewBest { get; private set; }
     public string RecapCause { get; private set; } = "";
@@ -49,6 +52,7 @@ public class RunManager : MonoBehaviour
     public System.Action RestartRequested;
 
     InputAction restartAction, confirmAction;
+    bool debugJumped; // đã dùng phím nhảy quãng đường -> lượt này không tính kỷ lục
     ObstacleData lastHit;
     Vector2 lastHitFrom;
 
@@ -107,7 +111,7 @@ public class RunManager : MonoBehaviour
     {
         if (State == RunState.Playing)
         {
-            float target = Mathf.Min(maxSpeed, baseSpeed + speedStepPerTier * Tier);
+            float target = Mathf.Min(maxSpeed, (baseSpeed + speedStepPerTier * Tier) * BiomeSpeedMultiplier);
             ScrollSpeed = Mathf.MoveTowards(ScrollSpeed, target, speedSmoothing * Time.deltaTime);
             Distance += ScrollSpeed * Time.deltaTime;
         }
@@ -121,6 +125,16 @@ public class RunManager : MonoBehaviour
             Restart();
         }
     }
+
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+    /// <summary>Chỉ để test: nhảy tới một quãng đường (chỉ tiến, không lùi). Lượt chơi sẽ không được lưu kỷ lục.</summary>
+    public void DebugJumpTo(float meters)
+    {
+        if (State != RunState.Playing || meters <= Distance) return;
+        Distance = meters;
+        debugJumped = true;
+    }
+#endif
 
     void Restart()
     {
@@ -185,23 +199,47 @@ public class RunManager : MonoBehaviour
             return;
         }
 
-        string where;
-        if (Mathf.Abs(lastHitFrom.x) > Mathf.Abs(lastHitFrom.y))
-            where = lastHitFrom.x > 0f ? "từ bên trái" : "từ bên phải";
-        else
-            where = lastHitFrom.y > 0f ? "từ phía dưới" : "từ phía trên";
+        string where = DescribeDirection(lastHit.behavior, lastHitFrom);
+        RecapCause = where.Length > 0
+            ? $"Nguyên nhân: {lastHit.displayName} {where}"
+            : $"Nguyên nhân: {lastHit.displayName}";
 
-        RecapCause = $"Nguyên nhân: {lastHit.displayName} {where}";
         RecapTip = lastHit.recapTip;
-        if ((lastHit.behavior == ObstacleBehavior.Strike || lastHit.behavior == ObstacleBehavior.Beam) &&
-            lastHit.telegraphTime > 0f)
-        {
+        if (HasTelegraph(lastHit.behavior) && lastHit.telegraphTime > 0f)
             RecapTip += $"  (Có cảnh báo {lastHit.telegraphTime:0.0}s trước.)";
+    }
+
+    /// <summary>Các hành vi có vạch/điểm cảnh báo trước khi gây sát thương (xoáy nhiệt, gai, cưa thì không).</summary>
+    static bool HasTelegraph(ObstacleBehavior b)
+    {
+        switch (b)
+        {
+            case ObstacleBehavior.Strike:
+            case ObstacleBehavior.Beam:
+            case ObstacleBehavior.Chase:
+            case ObstacleBehavior.Shockwave:
+            case ObstacleBehavior.RotatingBeam:
+                return true;
+            default:
+                return false;
         }
+    }
+
+    /// <summary>"từ bên trái/phải/trên/dưới" cho obstacle di chuyển; rỗng cho tia và sóng vì hướng không có nghĩa.</summary>
+    static string DescribeDirection(ObstacleBehavior b, Vector2 fromObstacleToPlayer)
+    {
+        if (b == ObstacleBehavior.Beam || b == ObstacleBehavior.Shockwave || b == ObstacleBehavior.RotatingBeam)
+            return "";
+
+        if (Mathf.Abs(fromObstacleToPlayer.x) > Mathf.Abs(fromObstacleToPlayer.y))
+            return fromObstacleToPlayer.x > 0f ? "từ bên trái" : "từ bên phải";
+        return fromObstacleToPlayer.y > 0f ? "từ phía dưới" : "từ phía trên";
     }
 
     void SaveResult()
     {
+        if (debugJumped) { NewBest = false; return; } // lượt có dùng phím debug không ghi kỷ lục
+
         NewBest = Distance > BestDistance;
         if (NewBest)
         {

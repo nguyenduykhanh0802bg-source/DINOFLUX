@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b97f9668b842d2946856c54e8dd6f631, type: 3}
+  m_Name: Obstacle_03_SpinningSaw
+  m_EditorClassIdentifier: Assembly-CSharp::ObstacleData
+  displayName: "C\u01B0a xoay"
+  recapTip: "C\u01B0a dao \u0111\u1ED9ng l\xEAn-xu\u1ED1ng theo chu k\u1EF3 - canh nh\u1ECBp r\u1ED3i dash qua."
+  shape: 3
+  color: {r: 0.7, g: 0.82, b: 0.95, a: 1}
+  sprite: {fileID: 0}
+  tintSprite: 0
+  frames: []
+  fps: 8
+  facing: 0
+  warningSprite: {fileID: 0}
+  size: {x: 1.188, y: 1.188}
+  hitboxScale: 0.8
+  behavior: 1
+  allowedDirections: 03000000i
+  telegraphTime: 0.8
+  activeTime: 0.7
+  strikeSpeed: 14
+  scrollMultiplier: 1
+  sineAmplitude: 2.2
+  sineFrequency: 1.6
+  spinSpeed: 360
+  chaseSpeed: 2.4
+  maxRadius: 7
+  fieldRadius: 3.2
+  fieldStrength: 5
+  damage: 1
+  difficultyCost: 3
+  spawnWeight: 2
+  minDistance: 120

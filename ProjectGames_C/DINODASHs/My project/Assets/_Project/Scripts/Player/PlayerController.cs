@@ -43,6 +43,7 @@ public class PlayerController : MonoBehaviour
     Vector2 lastDir = Vector2.right;
     Vector2 dashDir = Vector2.right;
     Vector2 squash = Vector2.one;
+    Vector2 externalAccum, externalApplied; // lực từ bên ngoài (trường hấp dẫn...)
     float dashTimer, cooldownTimer, bufferTimer, tailTimer;
     float facing = 1f;
     bool preferHorizontal = true;
@@ -135,9 +136,21 @@ public class PlayerController : MonoBehaviour
         UpdateVisual(dt);
     }
 
+    /// <summary>Lực đẩy/hút từ bên ngoài (đơn vị/giây). Cộng dồn trong khung hình, áp dụng ở FixedUpdate. Dash không bị ảnh hưởng.</summary>
+    public void AddExternalVelocity(Vector2 v)
+    {
+        externalAccum += v;
+    }
+
+    void LateUpdate()
+    {
+        externalApplied = IsDashing ? Vector2.zero : externalAccum;
+        externalAccum = Vector2.zero;
+    }
+
     void FixedUpdate()
     {
-        Vector2 next = rb.position + velocity * Time.fixedDeltaTime;
+        Vector2 next = rb.position + (velocity + externalApplied) * Time.fixedDeltaTime;
         next.x = Mathf.Clamp(next.x, bounds.xMin + bodyRadius, bounds.xMax - bodyRadius);
         next.y = Mathf.Clamp(next.y, bounds.yMin + bodyRadius, bounds.yMax - bodyRadius);
         rb.MovePosition(next);

@@ -3,7 +3,7 @@ using UnityEngine;
 
 /// <summary>
 /// Danh mục các ObstacleData mà DifficultyDirector được phép spawn.
-/// Tạo bằng menu: DinoDash > Create Default Obstacle Assets
+/// Tạo bằng menu: DinoDash > Create Default Obstacles and Biomes
 /// (hoặc Create > DinoDash > Obstacle Catalog rồi tự kéo asset vào danh sách).
 /// Sau này mỗi biome có thể có một catalog riêng.
 /// </summary>

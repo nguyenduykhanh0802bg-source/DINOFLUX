@@ -4,16 +4,25 @@ using UnityEngine;
 
 /// <summary>
 /// Dựng toàn bộ prototype từ code: gắn script này vào MỘT GameObject trống trong scene trống rồi bấm Play.
-/// Placeholder sprite, catalog obstacle, HUD... đều được sinh ra ở đây.
-/// Khi chuyển sang bản thật: thay các phần này bằng prefab + ScriptableObject asset.
+/// Placeholder sprite, HUD... đều được sinh ra ở đây.
+///
+/// Nguồn dữ liệu obstacle, theo thứ tự ưu tiên:
+///   1) Danh sách "Biomes" đã gán (asset)        -> chế độ biome (Rừng -> Hang động -> Núi lửa)
+///   2) "Obstacle Catalog" đã gán (asset)        -> chế độ một catalog duy nhất (như P1), không đổi biome
+///   3) Không gán gì                              -> biome mặc định tạo trong bộ nhớ (chạy được ngay, không chỉnh được)
 /// </summary>
 [DefaultExecutionOrder(-100)]
 public class PrototypeBootstrap : MonoBehaviour
 {
+    const float PlayerHitRadius = 0.3f; // hitbox nhỏ hơn sprite (nửa thân = 0.45) -> cảm giác công bằng
+
     public Color backgroundColor = new Color(0.04f, 0.07f, 0.12f);
 
     [Header("Dữ liệu obstacle")]
-    [Tooltip("Kéo asset ObstacleCatalog vào đây. Để trống = dùng bản mặc định trong code (DefaultObstacles).")]
+    [Tooltip("Danh sách biome (Rừng -> Hang động -> Núi lửa). Tạo bằng menu DinoDash > Create Default Obstacles and Biomes.")]
+    public List<BiomeData> biomes = new List<BiomeData>();
+
+    [Tooltip("Chế độ P1: một catalog duy nhất, không đổi biome. Chỉ dùng khi danh sách Biomes ở trên để trống.")]
     public ObstacleCatalog obstacleCatalog;
 
     GameObject root;
@@ -21,7 +30,7 @@ public class PrototypeBootstrap : MonoBehaviour
     CameraShake shake;
     Rect area;
     bool restarting;
-    List<ObstacleData> fallbackCatalog; // chỉ tạo 1 lần để restart không sinh thêm ScriptableObject rác
+    List<BiomeData> fallbackBiomes; // chỉ tạo 1 lần để restart không sinh thêm ScriptableObject rác
 
     void Awake()
     {
@@ -64,6 +73,7 @@ public class PrototypeBootstrap : MonoBehaviour
         spawner.Setup(area);
 
         var controller = BuildPlayer(root.transform, out PlayerHealth health);
+        spawner.BindPlayer(controller, health, PlayerHitRadius);
 
         var runGo = new GameObject("Run");
         runGo.transform.SetParent(root.transform, false);
@@ -79,11 +89,21 @@ public class PrototypeBootstrap : MonoBehaviour
         director.run = run;
         director.spawner = spawner;
         director.player = controller.transform;
-        director.catalog = ResolveCatalog();
 
         var backdropGo = new GameObject("Backdrop");
         backdropGo.transform.SetParent(root.transform, false);
-        backdropGo.AddComponent<ScrollingBackdrop>().Init(area, run);
+        var backdrop = backdropGo.AddComponent<ScrollingBackdrop>();
+        backdrop.Init(area, run);
+
+        // Biome: nếu có danh sách biome thì BiomeManager điều khiển catalog + màu + độ khó.
+        // Nếu không (chế độ P1) thì Director dùng thẳng một catalog duy nhất.
+        List<BiomeData> biomeList = ResolveBiomes();
+        if (biomeList == null) director.catalog = obstacleCatalog.ToList();
+
+        var biomeGo = new GameObject("Biomes");
+        biomeGo.transform.SetParent(root.transform, false);
+        var biomeManager = biomeGo.AddComponent<BiomeManager>();
+        biomeManager.Setup(biomeList, run, director, cam, backdrop);
 
         var hudGo = new GameObject("Hud");
         hudGo.transform.SetParent(root.transform, false);
@@ -91,6 +111,20 @@ public class PrototypeBootstrap : MonoBehaviour
         hud.run = run;
         hud.health = health;
         hud.controller = controller;
+        hud.biomes = biomeManager;
+    }
+
+    /// <summary>Trả về null khi dùng chế độ một catalog (P1); ngược lại là danh sách biome sẽ dùng.</summary>
+    List<BiomeData> ResolveBiomes()
+    {
+        if (biomes != null && biomes.Exists(b => b != null && b.catalog != null)) return biomes;
+
+        if (obstacleCatalog != null && obstacleCatalog.ToList().Count > 0) return null;
+
+        Debug.LogWarning("[DinoDash] Chưa gán Biomes - dùng biome mặc định trong code (không chỉnh được trong Inspector). " +
+                         "Chạy menu DinoDash > Create Default Obstacles and Biomes để tạo asset.");
+        if (fallbackBiomes == null) fallbackBiomes = DefaultBiomes.BuildRuntime();
+        return fallbackBiomes;
     }
 
     void OnRestartRequested()
@@ -122,7 +156,7 @@ public class PrototypeBootstrap : MonoBehaviour
 
         var col = go.AddComponent<CircleCollider2D>();
         col.isTrigger = true;
-        col.radius = 0.3f; // hitbox nhỏ hơn sprite (nửa thân = 0.45) -> cảm giác công bằng
+        col.radius = PlayerHitRadius;
 
         var visual = new GameObject("Visual").transform;
         visual.SetParent(go.transform, false);
@@ -150,25 +184,5 @@ public class PrototypeBootstrap : MonoBehaviour
         sr.color = color;
         sr.sortingOrder = order;
         return sr;
-    }
-
-    // ---------------------------------------------------------------- catalog obstacle
-
-    List<ObstacleData> ResolveCatalog()
-    {
-        if (obstacleCatalog != null)
-        {
-            List<ObstacleData> list = obstacleCatalog.ToList();
-            if (list.Count > 0) return list;
-            Debug.LogWarning("[DinoDash] ObstacleCatalog đang trống - dùng bản mặc định trong code.", obstacleCatalog);
-        }
-        else
-        {
-            Debug.LogWarning("[DinoDash] Chưa gán Obstacle Catalog cho PrototypeBootstrap - dùng bản mặc định trong code. " +
-                             "Chạy menu DinoDash > Create Default Obstacle Assets để tạo asset chỉnh được trong Inspector.");
-        }
-
-        if (fallbackCatalog == null) fallbackCatalog = DefaultObstacles.CreateAll();
-        return fallbackCatalog;
     }
 }

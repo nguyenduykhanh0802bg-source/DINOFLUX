@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b97f9668b842d2946856c54e8dd6f631, type: 3}
+  m_Name: Obstacle_07_Bat
+  m_EditorClassIdentifier: Assembly-CSharp::ObstacleData
+  displayName: "D\u01A1i"
+  recapTip: "D\u01A1i b\xE1m theo \u0111\u1ED9 cao c\u1EE7a b\u1EA1n nh\u01B0ng ch\u1ED1t h\u01B0\u1EDBng khi \u0111\u1EBFn g\u1EA7n - \u0111\u1ED5i \u0111\u1ED9 cao s\xE1t ph\xFAt cu\u1ED1i ho\u1EB7c dash xuy\xEAn qua."
+  shape: 6
+  color: {r: 0.72, g: 0.45, b: 0.95, a: 1}
+  sprite: {fileID: 21300000, guid: b1568c2d19903e84f9ff88f740d94a6a, type: 3}
+  tintSprite: 0
+  frames: []
+  fps: 8
+  facing: 0
+  warningSprite: {fileID: 0}
+  size: {x: 1.1, y: 0.8}
+  hitboxScale: 0.7
+  behavior: 4
+  allowedDirections: 03000000i
+  telegraphTime: 0.9
+  activeTime: 0.7
+  strikeSpeed: 8
+  scrollMultiplier: 1
+  sineAmplitude: 2
+  sineFrequency: 1.5
+  spinSpeed: 0
+  chaseSpeed: 2.6
+  maxRadius: 7
+  fieldRadius: 3.2
+  fieldStrength: 5
+  damage: 1
+  difficultyCost: 3
+  spawnWeight: 1.5
+  minDistance: 560

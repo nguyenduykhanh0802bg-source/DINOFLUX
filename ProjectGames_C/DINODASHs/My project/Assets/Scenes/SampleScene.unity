@@ -164,6 +164,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PrototypeBootstrap
   backgroundColor: {r: 0.04, g: 0.07, b: 0.12, a: 1}
+  biomes:
+  - {fileID: 11400000, guid: 7d1aab0cb0ea13d49af1b324deda96c5, type: 2}
+  - {fileID: 11400000, guid: 966a08db69374eb4685b126c15a57afb, type: 2}
+  - {fileID: 11400000, guid: 7b6008bdf7003424f9de68fb4e38fd6c, type: 2}
+  obstacleCatalog: {fileID: 0}
 --- !u!1 &519420028
 GameObject:
   m_ObjectHideFlags: 0
@@ -389,7 +394,11 @@ MonoBehaviour:
         m_SelectedSource:
           rid: -2
         m_Provider2DCache:
-          rid: -2
+          rid: 3931481399317495814
+    - rid: 3931481399317495814
+      type: {class: 'Provider2DCache`1[[UnityEngine.Rendering.Universal.Light2DProvider, Unity.RenderPipelines.Universal.2D.Runtime]]', ns: UnityEngine.Rendering.Universal, asm: Unity.RenderPipelines.Universal.2D.Runtime}
+      data:
+        m_Cache: []
 --- !u!4 &619394802
 Transform:
   m_ObjectHideFlags: 0

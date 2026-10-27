@@ -6,8 +6,9 @@ public class PrototypeHud : MonoBehaviour
     public RunManager run;
     public PlayerHealth health;
     public PlayerController controller;
+    public BiomeManager biomes;
 
-    GUIStyle big, mid, small, title, center;
+    GUIStyle big, mid, small, title, center, banner, bannerSub;
     bool stylesReady;
 
     void InitStyles()
@@ -28,6 +29,17 @@ public class PrototypeHud : MonoBehaviour
 
         center = new GUIStyle(GUI.skin.label) { fontSize = 24, alignment = TextAnchor.MiddleCenter, wordWrap = true };
         center.normal.textColor = Color.white;
+
+        banner = new GUIStyle(GUI.skin.label) { fontSize = 40, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter };
+        banner.normal.textColor = new Color(1f, 0.95f, 0.7f);
+
+        bannerSub = new GUIStyle(GUI.skin.label) { fontSize = 22, alignment = TextAnchor.MiddleCenter };
+        bannerSub.normal.textColor = new Color(1f, 1f, 1f, 0.85f);
+    }
+
+    string BiomeLabel()
+    {
+        return biomes != null && biomes.HasBiomes ? biomes.CurrentName + "   |   " : "";
     }
 
     static void FillRect(Rect r, Color c)
@@ -63,13 +75,26 @@ public class PrototypeHud : MonoBehaviour
         }
 
         // Quãng đường, gem, bậc tốc độ
-        GUI.Label(new Rect(W - 340f, 14f, 316f, 44f), $"{Mathf.FloorToInt(run.Distance)} m", big);
-        GUI.Label(new Rect(W - 340f, 58f, 316f, 30f), $"Gem: {run.Gems}   |   Tốc độ cấp {run.Tier + 1}", mid);
-        GUI.Label(new Rect(W - 340f, 86f, 316f, 30f), $"Kỷ lục: {Mathf.FloorToInt(run.BestDistance)} m", mid);
+        // Khung rộng hơn P1 vì dòng biome + gem + tốc độ dài, tránh bị xuống dòng đè lên dòng kỷ lục.
+        GUI.Label(new Rect(W - 600f, 14f, 576f, 44f), $"{Mathf.FloorToInt(run.Distance)} m", big);
+        GUI.Label(new Rect(W - 600f, 58f, 576f, 30f), $"{BiomeLabel()}Gem: {run.Gems}   |   Tốc độ cấp {run.Tier + 1}", mid);
+        GUI.Label(new Rect(W - 600f, 86f, 576f, 30f), $"Kỷ lục: {Mathf.FloorToInt(run.BestDistance)} m", mid);
 
         string mode = controller != null && controller.moveMode == PlayerController.MoveMode.EightWay ? "8 hướng" : "4 hướng";
-        GUI.Label(new Rect(0f, H - 36f, W, 30f),
-            $"WASD/Mũi tên: di chuyển   |   Space/Shift: Dash   |   T: đổi chế độ ({mode})   |   R: chơi lại", small);
+        string hint = $"WASD/Mũi tên: di chuyển   |   Space/Shift: Dash   |   T: đổi chế độ ({mode})   |   R: chơi lại";
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        if (biomes != null && biomes.HasBiomes) hint += "   |   F2: nhảy biome (debug)";
+#endif
+        GUI.Label(new Rect(0f, H - 36f, W, 30f), hint, small);
+
+        if (biomes != null && biomes.HasBiomes && biomes.BannerAlpha > 0.01f && run.IsPlaying)
+        {
+            GUI.color = new Color(1f, 1f, 1f, biomes.BannerAlpha);
+            GUI.Label(new Rect(0f, 130f, W, 60f), "- " + biomes.BannerText + " -", banner);
+            if (!string.IsNullOrEmpty(biomes.BannerSub))
+                GUI.Label(new Rect(W * 0.15f, 184f, W * 0.7f, 40f), biomes.BannerSub, bannerSub);
+            GUI.color = Color.white;
+        }
 
         if (run.State == RunManager.RunState.GameOver) DrawGameOver(W, H);
     }
